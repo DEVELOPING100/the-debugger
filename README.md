@@ -9,6 +9,6 @@ A repository stores the files and history of a project. A commit saves a snapsho
 
 
 ## Working Remotely
-
-
-A remote repository is hosted on GitHub for collaboration. `git clone` copies a remote repository to your computer, while `git push` uploads local commits and `git pull` downloads and integrates remote changes. `git fetch` downloads updates without integrating them. `git remote` manages remote connections. Pull requests allow developers to propose changes for review. Merging combines branches, while merge conflicts occur when Git cannot automatically combine changes. Collaborators are people who have permission to access and contribute to a repository.
+  Git allows developers to collaborate on project using remote repositories hosted on platform such as GitHub. The remote repository stores a shared copy of the project that team members can access.
+i
+  Important commands include 'git clone' to copy a repository,'git push' to upload local commits, 'git pull' to retireve and integrate changes, and 'git fetch' to download remote updates without automatically merging them.
