@@ -58,7 +58,7 @@ CREATE TABLE help_requests (
   claimed_by    BIGINT       REFERENCES users(id),
   time_joined   TIMESTAMP    NOT NULL DEFAULT NOW(),
   time_claimed  TIMESTAMP,
-  time_resolved TIMESTAMP
+  time_resolved TIMESTAMP,
   rating        INTEGER CHECK (rating BETWEEN 1 AND 5),
   rating_comment VARCHAR(300)
 );
