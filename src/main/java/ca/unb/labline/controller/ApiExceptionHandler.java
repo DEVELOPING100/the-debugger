@@ -1,10 +1,12 @@
 package ca.unb.labline.controller;
 
 import ca.unb.labline.service.InvalidRequestException;
+import ca.unb.labline.service.InvalidStatusChangeException;
 import ca.unb.labline.service.NotRequestOwnerException;
 import ca.unb.labline.service.RegistrationException;
 import ca.unb.labline.service.RequestNotEditableException;
 import ca.unb.labline.service.RequestNotFoundException;
+import ca.unb.labline.service.TaActionNotAllowedException;
 import ca.unb.labline.service.UserNotFoundException;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -27,13 +29,13 @@ public class ApiExceptionHandler {
         return error(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
-    @ExceptionHandler(NotRequestOwnerException.class)
-    public ResponseEntity<Map<String, String>> handleNotOwner(NotRequestOwnerException e) {
+    @ExceptionHandler({NotRequestOwnerException.class, TaActionNotAllowedException.class})
+    public ResponseEntity<Map<String, String>> handleForbidden(RuntimeException e) {
         return error(HttpStatus.FORBIDDEN, e.getMessage());
     }
 
-    @ExceptionHandler(RequestNotEditableException.class)
-    public ResponseEntity<Map<String, String>> handleNotEditable(RequestNotEditableException e) {
+    @ExceptionHandler({RequestNotEditableException.class, InvalidStatusChangeException.class})
+    public ResponseEntity<Map<String, String>> handleConflict(RuntimeException e) {
         return error(HttpStatus.CONFLICT, e.getMessage());
     }
 

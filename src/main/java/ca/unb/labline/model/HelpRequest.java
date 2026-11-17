@@ -153,6 +153,18 @@ public class HelpRequest {
         this.timeResolved = LocalDateTime.now();
     }
 
+    /** Clears the claim when a TA puts the request back in the queue. */
+    public void releaseClaim() {
+        this.claimedBy = null;
+        this.timeClaimed = null;
+    }
+
+    /** True only if this TA is the one who claimed the request. */
+    public boolean isClaimedBy(User ta) {
+        return claimedBy != null && ta != null
+                && Objects.equals(claimedBy.getId(), ta.getId());
+    }
+
     @Override
     public String toString() {
         return "HelpRequest{id=" + id + ", status=" + status + ", seat=" + seat + "}";
