@@ -59,6 +59,8 @@ CREATE TABLE help_requests (
   time_joined   TIMESTAMP    NOT NULL DEFAULT NOW(),
   time_claimed  TIMESTAMP,
   time_resolved TIMESTAMP
+  rating        INTEGER CHECK (rating BETWEEN 1 AND 5),
+  rating_comment VARCHAR(300)
 );
 
 -- A student can have only one open request per session

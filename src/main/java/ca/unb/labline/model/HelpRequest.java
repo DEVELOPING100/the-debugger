@@ -62,6 +62,14 @@ public class HelpRequest {
     @Column(name = "time_resolved")
     private LocalDateTime timeResolved;
 
+    /** SCRUM-14: the student's 1-5 rating of the help they got (null until rated). */
+    @Column(name = "rating")
+    private Integer rating;
+
+    /** SCRUM-14: optional comment that goes with the rating. */
+    @Column(name = "rating_comment", length = 300)
+    private String ratingComment;
+
     /** Required by JPA; not for use in application code. */
     protected HelpRequest() {
     }
@@ -122,8 +130,20 @@ public class HelpRequest {
         return timeResolved;
     }
 
+    public Integer getRating() {
+        return rating;
+    }
+
+    public String getRatingComment() {
+        return ratingComment;
+    }
+
     public boolean isWaiting() {
         return status == RequestStatus.WAITING;
+    }
+
+    public boolean isRated() {
+        return rating != null;
     }
 
     public boolean isOwnedBy(User user) {
@@ -149,6 +169,12 @@ public class HelpRequest {
 
     public void markResolved() {
         this.timeResolved = LocalDateTime.now();
+    }
+
+    /** Records the student's rating; the service checks the rules first. */
+    public void rate(int newRating, String newComment) {
+        this.rating = newRating;
+        this.ratingComment = newComment;
     }
 
     @Override
