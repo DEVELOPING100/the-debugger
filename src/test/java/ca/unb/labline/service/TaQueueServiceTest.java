@@ -246,6 +246,88 @@ class TaQueueServiceTest {
         assertEquals(List.of(request), queue);
     }
 
+    // ---- broadcast answer (SCRUM-11) ----
+
+    @Test
+    void broadcastResolvesEveryRequestInTheClusterAndAuditsEach() {
+        HelpRequest second = anotherRequest(101L, session);
+        givenLoggedIn(ta);
+        givenSessionExists();
+        givenRequestsExist(request, second);
+        givenSaveReturnsWhatIsSaved();
+
+        List<HelpRequest> answered = service.broadcastAnswer(SESSION_ID, List.of(REQUEST_ID, 101L),
+                "  Create the object with new before calling getName()  ", ta.getEmail());
+
+        assertEquals(List.of(request, second), answered);
+        for (HelpRequest each : answered) {
+            assertEquals(RequestStatus.RESOLVED, each.getStatus());
+            assertEquals(ta, each.getClaimedBy());
+            assertNotNull(each.getTimeResolved());
+            verify(auditLogger).record(each, RequestStatus.WAITING, RequestStatus.RESOLVED, ta,
+                    "Broadcast answer: Create the object with new before calling getName()");
+        }
+    }
+
+    @Test
+    void broadcastCanIncludeARequestThisTaAlreadyClaimed() {
+        givenClaimedBy(ta);
+        HelpRequest second = anotherRequest(101L, session);
+        givenLoggedIn(ta);
+        givenSessionExists();
+        givenRequestsExist(request, second);
+        givenSaveReturnsWhatIsSaved();
+
+        service.broadcastAnswer(SESSION_ID, List.of(REQUEST_ID, 101L), "Same fix", ta.getEmail());
+
+        verify(auditLogger).record(request, RequestStatus.CLAIMED, RequestStatus.RESOLVED, ta,
+                "Broadcast answer: Same fix");
+        verify(auditLogger).record(second, RequestStatus.WAITING, RequestStatus.RESOLVED, ta,
+                "Broadcast answer: Same fix");
+    }
+
+    @Test
+    void broadcastIncludingAnotherTasClaimChangesNothing() {
+        HelpRequest othersClaim = anotherRequest(101L, session);
+        othersClaim.markClaimed(otherTa);
+        othersClaim.changeStatus(RequestStatus.CLAIMED);
+        givenLoggedIn(ta);
+        givenSessionExists();
+        givenRequestsExist(request, othersClaim);
+
+        assertThrows(InvalidStatusChangeException.class, () -> service.broadcastAnswer(
+                SESSION_ID, List.of(REQUEST_ID, 101L), "Same fix", ta.getEmail()));
+        assertEquals(RequestStatus.WAITING, request.getStatus());
+        verify(helpRequestRepository, never()).save(any());
+        verifyNothingAudited();
+    }
+
+    @Test
+    void broadcastCannotIncludeARequestFromAnotherSession() {
+        LabSession otherSession = withId(new LabSession(session.getCourse(), "Lab B", "ITC 317",
+                LocalDateTime.now(), LocalDateTime.now().plusHours(2), "TEST02"), 21L);
+        HelpRequest fromOtherLab = anotherRequest(101L, otherSession);
+        givenLoggedIn(ta);
+        givenSessionExists();
+        givenRequestsExist(request, fromOtherLab);
+
+        assertThrows(InvalidRequestException.class, () -> service.broadcastAnswer(
+                SESSION_ID, List.of(REQUEST_ID, 101L), "Same fix", ta.getEmail()));
+        verifyNothingAudited();
+    }
+
+    @Test
+    void broadcastNeedsAnAnswerAndAtLeastOneRequest() {
+        givenLoggedIn(ta);
+        givenSessionExists();
+
+        assertThrows(InvalidRequestException.class, () -> service.broadcastAnswer(
+                SESSION_ID, List.of(REQUEST_ID), "   ", ta.getEmail()));
+        assertThrows(InvalidRequestException.class, () -> service.broadcastAnswer(
+                SESSION_ID, List.of(), "Same fix", ta.getEmail()));
+        verifyNothingAudited();
+    }
+
     // ---- helpers ----
 
     private void givenLoggedIn(User user) {
@@ -267,6 +349,24 @@ class TaQueueServiceTest {
     private void givenClaimedBy(User claimer) {
         request.markClaimed(claimer);
         request.changeStatus(RequestStatus.CLAIMED);
+    }
+
+    private void givenRequestsExist(HelpRequest... requests) {
+        for (HelpRequest each : requests) {
+            when(helpRequestRepository.findById(each.getId())).thenReturn(Optional.of(each));
+        }
+    }
+
+    private void givenSaveReturnsWhatIsSaved() {
+        when(helpRequestRepository.save(any(HelpRequest.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    /** A waiting request from a different student, so a cluster can hold several. */
+    private HelpRequest anotherRequest(Long id, LabSession inSession) {
+        User otherStudent = withId(new User("student" + id + "@unb.ca", "Student " + id, "HASH"), id);
+        return withId(new HelpRequest(inSession, otherStudent, request.getCategory(),
+                "My object is null when I call getName()", "Row 5 Seat 1"), id);
     }
 
     private void verifyNothingAudited() {

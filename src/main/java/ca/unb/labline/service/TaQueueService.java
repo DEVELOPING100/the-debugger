@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
  *   CLAIMED  -> RESOLVED  (only the TA who claimed it)
  *   CLAIMED  -> DEFERRED  (only the TA who claimed it)
  *   CLAIMED or DEFERRED -> WAITING  (return to queue; keeps its original place)
+ *   WAITING, or CLAIMED by this TA -> RESOLVED  (one broadcast answer to a cluster, SCRUM-11)
  * Every status change is written to the audit log through AuditLogger.
  */
 @Service
@@ -32,6 +33,10 @@ public class TaQueueService {
     private static final String RESOLVE_REASON = "Resolved by TA";
     private static final String DEFAULT_DEFER_REASON = "Deferred by TA";
     private static final String DEFAULT_RETURN_REASON = "Returned to queue by TA";
+    private static final String BROADCAST_PREFIX = "Broadcast answer: ";
+
+    /** The answer is kept as the audit reason (VARCHAR 255), so it must fit with the prefix. */
+    public static final int MAX_ANSWER_LENGTH = 230;
 
     private final HelpRequestRepository helpRequestRepository;
     private final LabSessionRepository labSessionRepository;
@@ -101,6 +106,67 @@ public class TaQueueService {
         request.releaseClaim();
         return changeStatus(request, RequestStatus.WAITING, ta,
                 reasonOrDefault(reason, DEFAULT_RETURN_REASON));
+    }
+
+    /**
+     * SCRUM-11: answers a whole cluster at once. The TA sends the ids of the requests
+     * they saw in the cluster (clusters are not stored). Every request is checked
+     * before any is changed, so either all are resolved or none are.
+     */
+    @Transactional
+    public List<HelpRequest> broadcastAnswer(Long sessionId, List<Long> requestIds,
+            String answer, String taEmail) {
+        User ta = findUser(taEmail);
+        requireStaffOf(findSession(sessionId), ta);
+        requireValidAnswer(answer);
+        List<HelpRequest> cluster = findAnswerableRequests(sessionId, requestIds, ta);
+
+        String reason = BROADCAST_PREFIX + answer.trim();
+        return cluster.stream()
+                .map(request -> resolveByBroadcast(request, ta, reason))
+                .toList();
+    }
+
+    private List<HelpRequest> findAnswerableRequests(Long sessionId, List<Long> requestIds, User ta) {
+        if (requestIds == null || requestIds.isEmpty()) {
+            throw new InvalidRequestException("Choose at least one request to answer");
+        }
+        List<HelpRequest> cluster = requestIds.stream().distinct().map(this::findRequest).toList();
+        for (HelpRequest request : cluster) {
+            if (!Objects.equals(request.getSession().getId(), sessionId)) {
+                throw new InvalidRequestException(
+                        "Request " + request.getId() + " is not in this lab session");
+            }
+            if (!isAnswerableBy(request, ta)) {
+                throw new InvalidStatusChangeException("Request " + request.getId() + " is "
+                        + request.getStatus() + " and cannot get a broadcast answer");
+            }
+        }
+        return cluster;
+    }
+
+    /** Waiting requests, or ones this TA already claimed (never another TA's claim). */
+    private boolean isAnswerableBy(HelpRequest request, User ta) {
+        return request.isWaiting()
+                || (request.getStatus() == RequestStatus.CLAIMED && request.isClaimedBy(ta));
+    }
+
+    private HelpRequest resolveByBroadcast(HelpRequest request, User ta, String reason) {
+        if (request.isWaiting()) {
+            request.markClaimed(ta); // records which TA helped
+        }
+        request.markResolved();
+        return changeStatus(request, RequestStatus.RESOLVED, ta, reason);
+    }
+
+    private void requireValidAnswer(String answer) {
+        if (answer == null || answer.isBlank()) {
+            throw new InvalidRequestException("The answer cannot be empty");
+        }
+        if (answer.trim().length() > MAX_ANSWER_LENGTH) {
+            throw new InvalidRequestException(
+                    "The answer must be at most " + MAX_ANSWER_LENGTH + " characters");
+        }
     }
 
     /** The one place a TA action changes a status, so none can skip the audit log. */
