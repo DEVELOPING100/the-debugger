@@ -75,3 +75,12 @@ CREATE TABLE audit_log (
   changed_at TIMESTAMP   NOT NULL DEFAULT NOW(),
   reason     VARCHAR(255)
 );
+
+CREATE TABLE faq_entries (
+  id         BIGSERIAL PRIMARY KEY,
+  session_id BIGINT        NOT NULL REFERENCES lab_sessions(id),
+  created_by BIGINT        NOT NULL REFERENCES users(id),
+  question   VARCHAR(300)  NOT NULL,
+  answer     VARCHAR(1000) NOT NULL,
+  created_at TIMESTAMP     NOT NULL DEFAULT NOW()
+);
