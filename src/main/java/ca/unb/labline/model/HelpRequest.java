@@ -126,8 +126,10 @@ public class HelpRequest {
         return status == RequestStatus.WAITING;
     }
 
+    /** True only if both accounts are saved and have the same id. */
     public boolean isOwnedBy(User user) {
-        return user != null && Objects.equals(student.getId(), user.getId());
+        return user != null && student.getId() != null
+                && Objects.equals(student.getId(), user.getId());
     }
 
     /** Replaces the editable details (used by SCRUM-24 edit). */
