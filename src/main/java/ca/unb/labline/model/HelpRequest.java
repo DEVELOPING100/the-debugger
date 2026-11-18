@@ -147,7 +147,8 @@ public class HelpRequest {
     }
 
     public boolean isOwnedBy(User user) {
-        return user != null && Objects.equals(student.getId(), user.getId());
+        return user != null && student.getId() != null
+                && Objects.equals(student.getId(), user.getId());
     }
 
     /** Replaces the editable details (used by SCRUM-24 edit). */
