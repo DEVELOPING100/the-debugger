@@ -126,8 +126,10 @@ public class HelpRequest {
         return status == RequestStatus.WAITING;
     }
 
+    /** True only if both accounts are saved and have the same id. */
     public boolean isOwnedBy(User user) {
-        return user != null && Objects.equals(student.getId(), user.getId());
+        return user != null && student.getId() != null
+                && Objects.equals(student.getId(), user.getId());
     }
 
     /** Replaces the editable details (used by SCRUM-24 edit). */
@@ -149,6 +151,18 @@ public class HelpRequest {
 
     public void markResolved() {
         this.timeResolved = LocalDateTime.now();
+    }
+
+    /** Clears the claim when a TA puts the request back in the queue. */
+    public void releaseClaim() {
+        this.claimedBy = null;
+        this.timeClaimed = null;
+    }
+
+    /** True only if this TA is the one who claimed the request. */
+    public boolean isClaimedBy(User ta) {
+        return claimedBy != null && ta != null
+                && Objects.equals(claimedBy.getId(), ta.getId());
     }
 
     @Override
