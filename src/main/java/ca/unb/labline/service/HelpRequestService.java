@@ -14,7 +14,9 @@ import ca.unb.labline.repository.LabSessionRepository;
 import ca.unb.labline.repository.UserRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Business rules for help requests (the queue entries students submit). */
 @Service
@@ -26,6 +28,9 @@ public class HelpRequestService {
 
     static final int MAX_DESCRIPTION_LENGTH = 300;
     static final int MAX_SEAT_LENGTH = 20;
+    static final int MIN_RATING = 1;
+    static final int MAX_RATING = 5;
+    static final int MAX_COMMENT_LENGTH = 300;
 
     private final HelpRequestRepository helpRequestRepository;
     private final LabSessionRepository labSessionRepository;
@@ -63,6 +68,24 @@ public class HelpRequestService {
         return helpRequestRepository.save(request);
     }
 
+    /**
+     * SCRUM-14: a student rates the help they got (1-5, with an optional comment).
+     * Only the student who made a RESOLVED request can rate it, and only once.
+     */
+    @Transactional
+    public HelpRequest rateRequest(Long requestId, Long studentId, int rating, String comment) {
+        requireValidRating(rating);
+        requireValidComment(comment);
+
+        HelpRequest request = findRequest(requestId);
+        requireOwner(request, studentId);
+        requireResolved(request);
+        requireNotRated(request);
+
+        request.rate(rating, comment == null ? null : comment.trim());
+        return helpRequestRepository.save(request);
+    }
+
     private void requireText(String value, int maxLength, String fieldName) {
         if (value == null || value.isBlank()) {
             throw new IllegalArgumentException(fieldName + " must not be empty");
@@ -84,6 +107,43 @@ public class HelpRequestService {
                 sessionId, studentId, OPEN_STATUSES)) {
             throw new DuplicateOpenRequestException(studentId, sessionId);
         }
+    }
+
+    private void requireValidRating(int rating) {
+        if (rating < MIN_RATING || rating > MAX_RATING) {
+            throw new IllegalArgumentException(
+                    "Rating must be between " + MIN_RATING + " and " + MAX_RATING);
+        }
+    }
+
+    private void requireValidComment(String comment) {
+        if (comment != null && comment.trim().length() > MAX_COMMENT_LENGTH) {
+            throw new IllegalArgumentException(
+                    "Comment must be at most " + MAX_COMMENT_LENGTH + " characters");
+        }
+    }
+
+    private void requireOwner(HelpRequest request, Long studentId) {
+        if (!Objects.equals(request.getStudent().getId(), studentId)) {
+            throw new IllegalStateException("Only the student who made the request can rate it");
+        }
+    }
+
+    private void requireResolved(HelpRequest request) {
+        if (request.getStatus() != RequestStatus.RESOLVED) {
+            throw new IllegalStateException("Only resolved requests can be rated");
+        }
+    }
+
+    private void requireNotRated(HelpRequest request) {
+        if (request.isRated()) {
+            throw new IllegalStateException("This request has already been rated");
+        }
+    }
+
+    private HelpRequest findRequest(Long requestId) {
+        return helpRequestRepository.findById(requestId)
+                .orElseThrow(() -> new NoSuchElementException("Request not found: " + requestId));
     }
 
     private LabSession findSession(Long sessionId) {
