@@ -62,14 +62,6 @@ public class HelpRequest {
     @Column(name = "time_resolved")
     private LocalDateTime timeResolved;
 
-    /** SCRUM-14: the student's 1-5 rating of the help they got (null until rated). */
-    @Column(name = "rating")
-    private Integer rating;
-
-    /** SCRUM-14: optional comment that goes with the rating. */
-    @Column(name = "rating_comment", length = 300)
-    private String ratingComment;
-
     /** Required by JPA; not for use in application code. */
     protected HelpRequest() {
     }
@@ -130,26 +122,12 @@ public class HelpRequest {
         return timeResolved;
     }
 
-    public Integer getRating() {
-        return rating;
-    }
-
-    public String getRatingComment() {
-        return ratingComment;
-    }
-
     public boolean isWaiting() {
         return status == RequestStatus.WAITING;
     }
 
-    public boolean isRated() {
-        return rating != null;
-    }
-
-    /** True only if both accounts are saved and have the same id. */
     public boolean isOwnedBy(User user) {
-        return user != null && student.getId() != null
-                && Objects.equals(student.getId(), user.getId());
+        return user != null && Objects.equals(student.getId(), user.getId());
     }
 
     /** Replaces the editable details (used by SCRUM-24 edit). */
@@ -171,24 +149,6 @@ public class HelpRequest {
 
     public void markResolved() {
         this.timeResolved = LocalDateTime.now();
-    }
-
-    /** Clears the claim when a TA puts the request back in the queue (SCRUM-7). */
-    public void releaseClaim() {
-        this.claimedBy = null;
-        this.timeClaimed = null;
-    }
-
-    /** True only if this TA is the one who claimed the request (SCRUM-7). */
-    public boolean isClaimedBy(User ta) {
-        return claimedBy != null && ta != null
-                && Objects.equals(claimedBy.getId(), ta.getId());
-    }
-
-    /** Records the student's rating; the service checks the rules first. */
-    public void rate(int newRating, String newComment) {
-        this.rating = newRating;
-        this.ratingComment = newComment;
     }
 
     @Override
