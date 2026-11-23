@@ -146,6 +146,7 @@ public class HelpRequest {
         return rating != null;
     }
 
+    /** True only if both accounts are saved and have the same id. */
     public boolean isOwnedBy(User user) {
         return user != null && student.getId() != null
                 && Objects.equals(student.getId(), user.getId());
@@ -170,6 +171,18 @@ public class HelpRequest {
 
     public void markResolved() {
         this.timeResolved = LocalDateTime.now();
+    }
+
+    /** Clears the claim when a TA puts the request back in the queue (SCRUM-7). */
+    public void releaseClaim() {
+        this.claimedBy = null;
+        this.timeClaimed = null;
+    }
+
+    /** True only if this TA is the one who claimed the request (SCRUM-7). */
+    public boolean isClaimedBy(User ta) {
+        return claimedBy != null && ta != null
+                && Objects.equals(claimedBy.getId(), ta.getId());
     }
 
     /** Records the student's rating; the service checks the rules first. */

@@ -21,9 +21,9 @@ import ca.unb.labline.repository.LabSessionRepository;
 import ca.unb.labline.repository.UserRepository;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -51,8 +51,17 @@ class HelpRequestServiceTest {
     @Mock
     private Category category;
 
-    @InjectMocks
+    @Mock
+    private AuditLogger auditLogger;
+
     private HelpRequestService service;
+
+    @BeforeEach
+    void setUp() {
+        service = new HelpRequestService(helpRequestRepository, labSessionRepository,
+                userRepository, categoryRepository, auditLogger,
+                HelpRequestService.MAX_DESCRIPTION_LENGTH);
+    }
 
     // ---------- SCRUM-2: submitRequest ----------
 
@@ -171,7 +180,7 @@ class HelpRequestServiceTest {
     void rateRequest_throwsWhenRequestNotFound() {
         when(helpRequestRepository.findById(REQUEST_ID)).thenReturn(Optional.empty());
 
-        assertThrows(NoSuchElementException.class, () ->
+        assertThrows(RequestNotFoundException.class, () ->
                 service.rateRequest(REQUEST_ID, STUDENT_ID, 3, null));
     }
 
