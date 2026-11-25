@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LabLine – My queue</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Lab<span>Line</span></div>
+    <div class="row">
+      <span id="user-name" class="muted"></span>
+      <button type="button" id="logout" class="btn-secondary">Log out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Step 1: join a session with its code (FR4) -->
+    <section id="join-card" class="card">
+      <h1>Join your lab</h1>
+      <p class="muted">Type the join code your TA shows on the projector.</p>
+      <form id="join-form" novalidate>
+        <label for="join-code">Join code</label>
+        <input id="join-code" type="text" autocomplete="off" autocapitalize="characters" maxlength="10" required>
+        <button class="btn-primary" type="submit">Join</button>
+      </form>
+    </section>
+
+    <!-- Session header, shown once joined -->
+    <section id="session-card" class="card hidden">
+      <div class="row" style="justify-content: space-between; align-items: center;">
+        <h2 id="session-title" style="margin: 0;"></h2>
+        <span id="queue-chip" class="chip"></span>
+      </div>
+      <p id="session-room" class="muted" style="margin: 4px 0 0;"></p>
+      <button type="button" id="leave-session" class="btn-secondary" style="margin-top: 12px;">Change lab</button>
+    </section>
+
+    <!-- Step 2: submit a request (SCRUM-2) or edit it (SCRUM-24) -->
+    <section id="request-form-card" class="card hidden">
+      <h2 id="request-form-title">Ask for help</h2>
+      <form id="request-form" novalidate>
+        <label for="category">Category</label>
+        <select id="category" required></select>
+        <label for="description">What do you need help with?</label>
+        <textarea id="description" maxlength="300" required></textarea>
+        <div id="description-counter" class="counter">0 / 300</div>
+        <label for="seat">Your seat</label>
+        <input id="seat" type="text" maxlength="20" placeholder="e.g. Row 3 Seat 4" required>
+        <button class="btn-primary" type="submit" id="request-submit">Get in line</button>
+        <button class="btn-secondary hidden" type="button" id="edit-cancel" style="width: 100%; margin-top: 8px;">Back</button>
+      </form>
+    </section>
+
+    <!-- Step 3: my place in line, refreshed every 2 seconds (FR6, NFR2) -->
+    <section id="status-card" class="card hidden" aria-live="polite">
+      <div class="row" style="justify-content: space-between; align-items: center;">
+        <h2 style="margin: 0;">My request</h2>
+        <span id="status-chip" class="chip"></span>
+      </div>
+      <div style="margin: 16px 0;">
+        <div id="position" class="position"></div>
+        <div id="position-label" class="muted"></div>
+      </div>
+      <ul class="details">
+        <li><strong>Category:</strong> <span id="my-category"></span></li>
+        <li><strong>Question:</strong> <span id="my-description"></span></li>
+        <li><strong>Seat:</strong> <span id="my-seat"></span></li>
+      </ul>
+      <div id="waiting-actions" class="row">
+        <button type="button" id="edit-request" class="btn-secondary">Edit</button>
+        <button type="button" id="cancel-request" class="btn-danger">Cancel request</button>
+      </div>
+      <p class="muted" style="margin-top: 12px;">Updates automatically.</p>
+    </section>
+
+    <div id="message" class="message hidden" role="status"></div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/student.js"></script>
+</body>
+</html>
