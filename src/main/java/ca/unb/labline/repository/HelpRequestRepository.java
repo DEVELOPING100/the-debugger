@@ -20,4 +20,8 @@ public interface HelpRequestRepository extends JpaRepository<HelpRequest, Long> 
     /** True if the student already has an open request in this session. */
     boolean existsBySessionIdAndStudentIdAndStatusIn(
             Long sessionId, Long studentId, Collection<RequestStatus> statuses);
+
+    /** The student's open request in this session, if they have one. */
+    Optional<HelpRequest> findFirstBySessionIdAndStudentIdAndStatusIn(
+            Long sessionId, Long studentId, Collection<RequestStatus> statuses);
 }
