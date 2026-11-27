@@ -1,0 +1,50 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LabLine – FAQ</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Lab<span>Line</span></div>
+    <div class="row">
+      <span id="user-name" class="muted"></span>
+      <button type="button" id="logout" class="btn-secondary">Log out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="row" style="justify-content: space-between; align-items: center;">
+        <h1 style="margin: 0;">FAQ board</h1>
+        <button type="button" id="back" class="btn-secondary">Back</button>
+      </div>
+      <p class="muted">Check here for answers before you join the queue.</p>
+    </section>
+
+    <!-- FAQ cards are added here by js/faq.js -->
+    <section id="faq-list"></section>
+    <p id="faq-empty" class="muted hidden">No FAQs yet.</p>
+
+    <!-- Shown to TAs only (SCRUM-15) -->
+    <section id="faq-add-card" class="card hidden">
+      <h2>Add a FAQ</h2>
+      <form id="faq-form" novalidate>
+        <label for="faq-question">Question</label>
+        <input id="faq-question" type="text" maxlength="300" required>
+        <label for="faq-answer">Answer</label>
+        <textarea id="faq-answer" maxlength="1000" required></textarea>
+        <button class="btn-primary" type="submit">Add</button>
+      </form>
+    </section>
+
+    <div id="message" class="message hidden" role="status"></div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/faq.js"></script>
+</body>
+</html>
