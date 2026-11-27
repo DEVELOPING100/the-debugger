@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LabLine – TA queue</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="ta-page">
+  <header class="topbar">
+    <div class="brand">Lab<span>Line</span></div>
+    <div class="row">
+      <span id="user-name" class="muted"></span>
+      <button type="button" id="logout" class="btn-secondary">Log out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Step 1: open a lab session with its join code -->
+    <section id="join-card" class="card">
+      <h1>Open your lab queue</h1>
+      <p class="muted">Type the join code of the lab you are TA-ing.</p>
+      <form id="join-form" novalidate>
+        <label for="join-code">Join code</label>
+        <input id="join-code" type="text" autocomplete="off" autocapitalize="characters" maxlength="10" required>
+        <button class="btn-primary" type="submit">Open queue</button>
+      </form>
+    </section>
+
+    <!-- Session header with the "Help next" button (SCRUM-7) -->
+    <section id="session-card" class="card hidden">
+      <div class="row" style="justify-content: space-between; align-items: center;">
+        <h2 id="session-title" style="margin: 0;"></h2>
+        <span id="queue-chip" class="chip"></span>
+      </div>
+      <p id="session-room" class="muted" style="margin: 4px 0 0;"></p>
+      <div class="ta-stats">
+        <div><span id="waiting-count" class="position"></span> <span class="muted">waiting</span></div>
+      </div>
+      <div class="row">
+        <button type="button" id="claim-next" class="btn-primary">Help next student</button>
+      </div>
+      <button type="button" id="leave-session" class="btn-secondary" style="margin-top: 12px;">Change lab</button>
+    </section>
+
+    <!-- The live queue, refreshed every 2 seconds (SCRUM-7) -->
+    <section id="queue-card" class="card hidden" aria-live="polite">
+      <h2>Queue</h2>
+      <p id="queue-empty" class="muted hidden">Nobody is waiting right now.</p>
+      <ol id="queue-list" class="queue-list"></ol>
+      <p class="muted">Updates automatically.</p>
+    </section>
+
+    <!-- Similar questions and one answer for a whole group (SCRUM-10, SCRUM-11) -->
+    <section id="groups-card" class="card hidden">
+      <h2>Similar questions</h2>
+      <p class="muted">Find waiting questions about the same problem and answer them all at once.</p>
+      <button type="button" id="find-groups" class="btn-secondary">Find similar questions</button>
+      <p id="groups-empty" class="muted hidden">No similar questions right now.</p>
+      <div id="groups-list"></div>
+    </section>
+
+    <div id="message" class="message hidden" role="status"></div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/ta.js"></script>
+</body>
+</html>

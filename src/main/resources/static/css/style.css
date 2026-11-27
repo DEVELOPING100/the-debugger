@@ -219,3 +219,42 @@ button { border-radius: 4px; }
 @media (max-width: 420px) {
   #user-name { display: none; }
 }
+
+/* ============================================================
+   TA page (ta.html): live queue cards and similar-question groups
+   ============================================================ */
+.ta-stats { margin: 16px 0 4px; }
+.ta-stats .position { font-size: 2.5rem; }
+
+.queue-list { list-style: none; margin: 0 0 8px; padding: 0; }
+.queue-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.queue-item.mine { border-color: var(--brand); box-shadow: var(--glow); }
+.queue-item-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.queue-item p { margin: 6px 0 0; overflow-wrap: anywhere; }
+.queue-actions { margin-top: 10px; }
+.queue-actions .btn-primary { margin-top: 0; }
+
+.cluster { border-top: 1px dashed var(--border); margin-top: 16px; padding-top: 12px; }
+.cluster h3 { font-size: 1rem; margin: 0 0 4px; }
+.cluster .details li { overflow-wrap: anywhere; }
+
+/* Laptop layout: session on top, queue on the left, similar questions on the right */
+@media (min-width: 900px) {
+  body.ta-page .container {
+    max-width: 1100px;
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 0 24px;
+    align-items: start;
+  }
+  body.ta-page #session-card,
+  body.ta-page #join-card,
+  body.ta-page #message { grid-column: 1 / -1; }
+  body.ta-page #queue-card { grid-column: 1; }
+  body.ta-page #groups-card { grid-column: 2; }
+}
