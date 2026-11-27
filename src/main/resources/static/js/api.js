@@ -106,5 +106,47 @@ const LabLine = (() => {
     element.classList.toggle("hidden", !text);
   }
 
+  // ---------- light / dark switch (remembered in this browser) ----------
+
+  const THEME_KEY = "labline.theme";
+
+  function savedTheme() {
+    try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; }
+  }
+
+  function isDark() {
+    const saved = document.documentElement.getAttribute("data-theme");
+    if (saved) { return saved === "dark"; }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  function applyTheme(theme) {
+    if (theme) { document.documentElement.setAttribute("data-theme", theme); }
+  }
+
+  function addThemeToggle() {
+    const topbar = document.querySelector(".topbar");
+    if (!topbar) { return; }
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "theme-toggle";
+    const update = () => {
+      button.textContent = isDark() ? "\u2600" : "\u263E";
+      button.setAttribute("aria-label", isDark() ? "Switch to light theme" : "Switch to dark theme");
+    };
+    button.addEventListener("click", () => {
+      const next = isDark() ? "light" : "dark";
+      applyTheme(next);
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* not saved, still switches */ }
+      update();
+    });
+    update();
+    const actions = topbar.querySelector(".row");
+    (actions || topbar).appendChild(button);
+  }
+
+  applyTheme(savedTheme());
+  document.addEventListener("DOMContentLoaded", addThemeToggle);
+
   return { api, login, register, logout, currentUser, requireLogin, homePageFor, showMessage, read, write };
 })();

@@ -143,3 +143,79 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .counter { text-align: right; font-size: 0.8rem; color: var(--muted); }
 .hidden { display: none !important; }
+
+/* ============================================================
+   "Lab terminal" theme: monospace, green accent.
+   Light by default; dark when the device is in dark mode or the
+   user picks it with the ☾/☀ button (saved by api.js).
+   ============================================================ */
+:root {
+  --bg: #f6f8fa; --surface: #ffffff; --text: #1f2328; --muted: #59636e;
+  --border: #d1d9e0; --brand: #1a7f37; --brand-text: #ffffff;
+  --ok: #1a7f37; --warn: #9a6700; --danger: #cf222e; --field: #f6f8fa;
+  --glow: none; --radius: 6px; --shadow: 0 1px 2px rgba(31, 35, 40, 0.06);
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --surface: #161b22; --text: #e6edf3; --muted: #8b949e;
+    --border: #30363d; --brand: #3fb950; --brand-text: #0d1117;
+    --ok: #3fb950; --warn: #d29922; --danger: #f85149; --field: #0d1117;
+    --glow: 0 0 18px rgba(63, 185, 80, 0.35); --shadow: none;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0d1117; --surface: #161b22; --text: #e6edf3; --muted: #8b949e;
+  --border: #30363d; --brand: #3fb950; --brand-text: #0d1117;
+  --ok: #3fb950; --warn: #d29922; --danger: #f85149; --field: #0d1117;
+  --glow: 0 0 18px rgba(63, 185, 80, 0.35); --shadow: none;
+  color-scheme: dark;
+}
+
+body { font-size: 0.95rem; }
+.brand::before { content: "> "; color: var(--brand); }
+.brand span { color: var(--brand); }
+h1, h2 { font-weight: 600; letter-spacing: -0.02em; }
+h2::before { content: "# "; color: var(--muted); }
+label { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.08em; color: var(--muted); }
+input, select, textarea { background: var(--field); border-radius: 4px; }
+button { border-radius: 4px; }
+.card { border-left: 3px solid var(--brand); }
+.position { color: var(--brand); text-shadow: var(--glow); }
+.position::after { content: "_"; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.chip { border-radius: 4px; }
+
+.theme-toggle {
+  background: transparent; color: var(--text); border: 1px solid var(--border);
+  width: 40px; padding: 8px 0; font-size: 1rem; line-height: 1;
+}
+
+/* Laptop layout: wider page, session info on the left, my request on the right */
+@media (min-width: 900px) {
+  .topbar { padding: 14px 32px; }
+  .container { max-width: 480px; padding: 32px; }
+  body:has(#status-card) .container {
+    max-width: 1040px;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 0 24px;
+    align-items: start;
+  }
+  #session-card { grid-column: 1; }
+  #request-form-card, #status-card { grid-column: 2; grid-row: 1 / span 3; }
+  #join-card, #message { grid-column: 1 / -1; }
+  #join-card { width: 100%; max-width: 480px; margin: 0 auto 16px; }
+  .position { font-size: 5rem; }
+}
+
+/* Keep the top bar on one line on small phones */
+.brand, .topbar button { white-space: nowrap; }
+.topbar .row { flex-wrap: nowrap; }
+@media (max-width: 420px) {
+  #user-name { display: none; }
+}
