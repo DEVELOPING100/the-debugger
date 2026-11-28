@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LabLine</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Lab<span>Line</span></div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h1>Smart lab help queue</h1>
+      <p class="muted">Get in line for help from your phone. Use your @unb.ca account.</p>
+
+      <div class="tabs" role="tablist">
+        <button type="button" id="tab-login" class="active" role="tab">Log in</button>
+        <button type="button" id="tab-signup" role="tab">Sign up</button>
+      </div>
+
+      <form id="login-form" novalidate>
+        <label for="login-email">University email</label>
+        <input id="login-email" type="email" autocomplete="username" placeholder="you@unb.ca" required>
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" autocomplete="current-password" required>
+        <button class="btn-primary" type="submit">Log in</button>
+      </form>
+
+      <form id="signup-form" class="hidden" novalidate>
+        <label for="signup-name">Name</label>
+        <input id="signup-name" type="text" autocomplete="name" required>
+        <label for="signup-email">University email</label>
+        <input id="signup-email" type="email" autocomplete="username" placeholder="you@unb.ca" required>
+        <label for="signup-password">Password (at least 8 characters)</label>
+        <input id="signup-password" type="password" autocomplete="new-password" minlength="8" required>
+        <button class="btn-primary" type="submit">Create account</button>
+      </form>
+
+      <div id="message" class="message hidden" role="status"></div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
